@@ -1,5 +1,5 @@
 {
-  description = "Development environment for Competitive Programming Problems";
+  description = "Development environment for GFX Framework";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -25,6 +25,14 @@
           meson
           ninja
           cmake
+          pkg-config
+
+          libGL
+          glew
+          glfw
+          assimp
+          spdlog
+          freetype
 
           (python3.withPackages (
             ps: with ps; [
@@ -42,6 +50,8 @@
           nixfmt
           nixfmt-tree
         ];
+
+        CMAKE_EXPORT_COMPILE_COMMANDS = "ON";
       };
     };
 }

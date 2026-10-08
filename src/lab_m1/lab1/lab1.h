@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "components/simple_scene.h"
 
 namespace m1 {
@@ -24,6 +26,12 @@ private:
   void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
   void OnWindowResize(int width, int height) override;
 
-  // TODO(student): Class variables go here
+  float backgroundR = 0.0f;
+  float backgroundG = 0.0f;
+  float backgroundB = 0.0f;
+
+  const std::string meshNames[3] = {"sphere", "teapot", "box"};
+  int selectedMesh = 0;
+  glm::vec3 objectPosition = glm::vec3(0, 1.5f, 0);
 };
 } // namespace m1

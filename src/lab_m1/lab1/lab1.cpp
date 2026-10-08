@@ -28,8 +28,21 @@ void Lab1::Init() {
     meshes[mesh->GetMeshID()] = mesh;
   }
 
-  // TODO(student): Load some more meshes. The value of RESOURCE_PATH::MODELS
-  // is actually a path on disk, go there and you will find more meshes.
+  {
+    Mesh *mesh = new Mesh("sphere");
+    mesh->LoadMesh(
+        PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"),
+        "sphere.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+  }
+
+  {
+    Mesh *mesh = new Mesh("teapot");
+    mesh->LoadMesh(
+        PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"),
+        "teapot.obj");
+    meshes[mesh->GetMeshID()] = mesh;
+  }
 }
 
 void Lab1::FrameStart() {}
@@ -39,10 +52,7 @@ void Lab1::Update(float deltaTimeSeconds) {
 
   // Sets the clear color for the color buffer
 
-  // TODO(student): Generalize the arguments of `glClearColor`.
-  // You can, for example, declare three variables in the class header,
-  // that will store the color components (red, green, blue).
-  glClearColor(0, 0, 0, 1);
+  glClearColor(backgroundR, backgroundG, backgroundB, 1.0f);
 
   // Clears the color buffer (using the previously set color) and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -56,10 +66,8 @@ void Lab1::Update(float deltaTimeSeconds) {
   // Render the object again but with different properties
   RenderMesh(meshes["box"], glm::vec3(-1, 0.5f, 0));
 
-  // TODO(student): We need to render (a.k.a. draw) the mesh that
-  // was previously loaded. We do this using `RenderMesh`. Check the
-  // signature of this function to see the meaning of its parameters.
-  // You can draw the same mesh any number of times.
+  // Draw the selected mesh at its current position.
+  RenderMesh(meshes[meshNames[selectedMesh]], objectPosition, glm::vec3(0.5f));
 }
 
 void Lab1::FrameEnd() { DrawCoordinateSystem(); }
@@ -70,22 +78,41 @@ void Lab1::FrameEnd() { DrawCoordinateSystem(); }
  */
 
 void Lab1::OnInputUpdate(float deltaTime, int mods) {
-  // Treat continuous update based on input
+  // Reserve right-mouse + movement keys for the existing camera controls.
+  if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
+    return;
+  }
 
-  // TODO(student): Add some key hold events that will let you move
-  // a mesh instance on all three axes. You will also need to
-  // generalize the position used by `RenderMesh`.
+  const float speed = 2.0f; // World units per second along each axis.
+  const float distance = speed * deltaTime;
+
+  if (window->KeyHold(GLFW_KEY_W))
+    objectPosition.z -= distance;
+  if (window->KeyHold(GLFW_KEY_S))
+    objectPosition.z += distance;
+  if (window->KeyHold(GLFW_KEY_A))
+    objectPosition.x -= distance;
+  if (window->KeyHold(GLFW_KEY_D))
+    objectPosition.x += distance;
+  if (window->KeyHold(GLFW_KEY_Q))
+    objectPosition.y -= distance;
+  if (window->KeyHold(GLFW_KEY_E))
+    objectPosition.y += distance;
 }
 
 void Lab1::OnKeyPress(int key, int mods) {
   // Add key press event
   if (key == GLFW_KEY_F) {
-    // TODO(student): Change the values of the color components.
+    // Change the background from black to red.
+    backgroundR = 0.7f;
+    backgroundG = 0.3f;
+    backgroundB = 0.1f;
   }
 
-  // TODO(student): Add a key press event that will let you cycle
-  // through at least two meshes, rendered at the same position.
-  // You will also need to generalize the mesh name used by `RenderMesh`.
+  if (key == GLFW_KEY_G) {
+    // Wrap back to the sphere after displaying the box.
+    selectedMesh = (selectedMesh + 1) % 3;
+  }
 }
 
 void Lab1::OnKeyRelease(int key, int mods) {

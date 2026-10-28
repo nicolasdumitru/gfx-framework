@@ -31,6 +31,6 @@ protected:
     float scaleX, scaleY;
     float angularStep;
 
-    // TODO(student): If you need any other class variables, define them here.
+    float animationTime; // Elapsed seconds, shared clock for independent animations.
 };
 } // namespace m1

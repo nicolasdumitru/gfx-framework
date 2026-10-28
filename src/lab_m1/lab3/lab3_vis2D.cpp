@@ -1,8 +1,10 @@
 #include "lab_m1/lab3/lab3_vis2D.h"
 
+#include <cmath>
 #include <iostream>
 #include <vector>
 
+#include "GLFW/glfw3.h"
 #include "lab_m1/lab3/object2D.h"
 #include "lab_m1/lab3/transform2D.h"
 
@@ -135,9 +137,27 @@ void Lab3_Vis2D::DrawScene(glm::mat3 visMatrix) {
  */
 
 void Lab3_Vis2D::OnInputUpdate(float deltaTime, int mods) {
-    // TODO(student): Move the logic window with W, A, S, D (up, left, down, right)
+    const float moveSpeed = 2.0f; // Logical units per second.
+    if (window->KeyHold(GLFW_KEY_W)) logicSpace.y += moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_A)) logicSpace.x -= moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_S)) logicSpace.y -= moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_D)) logicSpace.x += moveSpeed * deltaTime;
 
-    // TODO(student): Zoom in and zoom out logic window with Z and X
+    // Z shrinks the visible logical window (zoom in); X expands it.
+    const int zoomDirection = int(window->KeyHold(GLFW_KEY_X)) - int(window->KeyHold(GLFW_KEY_Z));
+    if (zoomDirection != 0) {
+        const float zoomSpeed = 1.0f;
+        const float aspect = logicSpace.width / logicSpace.height;
+        const float newWidth = glm::clamp(
+            logicSpace.width * std::exp(zoomDirection * zoomSpeed * deltaTime), 0.1f, 100.0f);
+        const float newHeight = newWidth / aspect;
+
+        // Keep the center and aspect ratio unchanged while resizing.
+        logicSpace.x += (logicSpace.width - newWidth) * 0.5f;
+        logicSpace.y += (logicSpace.height - newHeight) * 0.5f;
+        logicSpace.width = newWidth;
+        logicSpace.height = newHeight;
+    }
 }
 
 void Lab3_Vis2D::OnKeyPress(int key, int mods) {}

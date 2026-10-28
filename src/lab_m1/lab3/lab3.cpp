@@ -1,5 +1,6 @@
 #include "lab_m1/lab3/lab3.h"
 
+#include <cmath>
 #include <iostream>
 #include <vector>
 
@@ -30,10 +31,9 @@ void Lab3::Init() {
     glm::vec3 corner = glm::vec3(0, 0, 0);
     float squareSide = 100;
 
-    // TODO(student): Compute coordinates of a square's center, and store
-    // then in the `cx` and `cy` class variables (see the header). Use
-    // `corner` and `squareSide`. These two class variables will be used
-    // in the `Update()` function. Think about it, why do you need them?
+    // Local-space center, used as the pivot for centered rotation and scaling.
+    cx = corner.x + squareSide * 0.5f;
+    cy = corner.y + squareSide * 0.5f;
 
     // Initialize tx and ty (the translation steps)
     translateX = 0;
@@ -45,6 +45,7 @@ void Lab3::Init() {
 
     // Initialize angularStep
     angularStep = 0;
+    animationTime = 0;
 
     Mesh *square1 = object2D::CreateSquare("square1", corner, squareSide, glm::vec3(1, 0, 0), true);
     AddMeshToList(square1);
@@ -67,33 +68,31 @@ void Lab3::FrameStart() {
 }
 
 void Lab3::Update(float deltaTimeSeconds) {
-    // TODO(student): Update steps for translation, rotation and scale,
-    // in order to create animations. Use the class variables in the
-    // class header, and if you need more of them to complete the task,
-    // add them over there!
+    animationTime += deltaTimeSeconds;
 
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(150, 250);
-    // TODO(student): Create animations by multiplying the current
-    // transform matrix with the matrices you just implemented.
-    // Remember, the last matrix in the chain will take effect first!
+    // Sine varies smoothly between -1 and 1, reversing at each endpoint.
+    translateX = 100.0f * std::sin(animationTime * 1.5f);
+    translateY = 0.0f;
+    scaleX = scaleY = 1.0f + 0.5f * std::sin(animationTime * 2.0f);
+    angularStep = glm::radians(45.0f) * std::sin(animationTime);
 
+    // Red: horizontal movement, 100 units either side of its base position.
+    modelMatrix = transform2D::Translate(150, 250) *
+                  transform2D::Translate(translateX, translateY);
     RenderMesh2D(meshes["square1"], shaders["VertexColor"], modelMatrix);
 
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(400, 250);
-    // TODO(student): Create animations by multiplying the current
-    // transform matrix with the matrices you just implemented
-    // Remember, the last matrix in the chain will take effect first!
-
+    // Green: grow and shrink around its center, from 0.5x to 1.5x.
+    modelMatrix = transform2D::Translate(400, 250) *
+                  transform2D::Translate(cx, cy) *
+                  transform2D::Scale(scaleX, scaleY) *
+                  transform2D::Translate(-cx, -cy);
     RenderMesh2D(meshes["square2"], shaders["VertexColor"], modelMatrix);
 
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(650, 250);
-    // TODO(student): Create animations by multiplying the current
-    // transform matrix with the matrices you just implemented
-    // Remember, the last matrix in the chain will take effect first!
-
+    // Blue: swing between -45 and +45 degrees around its center.
+    modelMatrix = transform2D::Translate(650, 250) *
+                  transform2D::Translate(cx, cy) *
+                  transform2D::Rotate(angularStep) *
+                  transform2D::Translate(-cx, -cy);
     RenderMesh2D(meshes["square3"], shaders["VertexColor"], modelMatrix);
 }
 

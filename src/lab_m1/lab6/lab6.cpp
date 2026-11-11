@@ -1,4 +1,6 @@
 #include "lab_m1/lab6/lab6.h"
+#include "glm/gtc/type_ptr.hpp"
+#include "utils/gl_utils.h"
 
 #include <vector>
 #include <string>
@@ -195,18 +197,28 @@ void Lab6::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     glUseProgram(shader->program);
 
     // TODO(student): Get shader location for uniform mat4 "Model"
+    GLint locModel = glGetUniformLocation(shader->program, "Model");
 
     // TODO(student): Set shader uniform "Model" to modelMatrix
+    glUniformMatrix4fv(locModel, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
     // TODO(student): Get shader location for uniform mat4 "View"
+    GLint locView = glGetUniformLocation(shader->program, "View");
 
     // TODO(student): Set shader uniform "View" to viewMatrix
     glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+    glUniformMatrix4fv(locView, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 
     // TODO(student): Get shader location for uniform mat4 "Projection"
+    GLint locProj = glGetUniformLocation(shader->program, "Projection");
 
     // TODO(student): Set shader uniform "Projection" to projectionMatrix
     glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+    glUniformMatrix4fv(locProj, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+    // Bonus: send the elapsed application time to the shader
+    GLint locTime = glGetUniformLocation(shader->program, "Time");
+    glUniform1f(locTime, static_cast<float>(Engine::GetElapsedTime()));
 
     // Draw the object
     glBindVertexArray(mesh->GetBuffers()->m_VAO);

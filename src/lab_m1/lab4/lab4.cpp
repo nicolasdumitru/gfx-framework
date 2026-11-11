@@ -97,6 +97,7 @@ void Lab4::Update(float deltaTimeSeconds)
     glViewport(miniViewportArea.x, miniViewportArea.y, miniViewportArea.width, miniViewportArea.height);
 
     // TODO(student): render the scene again, in the new viewport
+    RenderScene();
     DrawCoordinateSystem();
 }
 
@@ -114,7 +115,43 @@ void Lab4::FrameEnd()
 void Lab4::OnInputUpdate(float deltaTime, int mods)
 {
     // TODO(student): Add transformation logic
+    // WASD are also used by the camera while the right mouse button is held
+    if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
+        return;
 
+    const float moveSpeed = 2.0f;
+    const float scaleSpeed = 1.0f;
+    const float rotateSpeed = 2.0f;
+
+    // Translation of the first cube
+    if (window->KeyHold(GLFW_KEY_W)) translateZ -= moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_S)) translateZ += moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_A)) translateX -= moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_D)) translateX += moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_R)) translateY += moveSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_F)) translateY -= moveSpeed * deltaTime;
+
+    // Uniform scaling of the second cube
+    if (window->KeyHold(GLFW_KEY_1))
+    {
+        scaleX += scaleSpeed * deltaTime;
+        scaleY += scaleSpeed * deltaTime;
+        scaleZ += scaleSpeed * deltaTime;
+    }
+    if (window->KeyHold(GLFW_KEY_2))
+    {
+        scaleX = glm::max(0.0f, scaleX - scaleSpeed * deltaTime);
+        scaleY = glm::max(0.0f, scaleY - scaleSpeed * deltaTime);
+        scaleZ = glm::max(0.0f, scaleZ - scaleSpeed * deltaTime);
+    }
+
+    // Rotation of the third cube
+    if (window->KeyHold(GLFW_KEY_3)) angularStepOX += rotateSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_4)) angularStepOX -= rotateSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_5)) angularStepOY += rotateSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_6)) angularStepOY -= rotateSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_7)) angularStepOZ += rotateSpeed * deltaTime;
+    if (window->KeyHold(GLFW_KEY_8)) angularStepOZ -= rotateSpeed * deltaTime;
 }
 
 
@@ -138,6 +175,28 @@ void Lab4::OnKeyPress(int key, int mods)
     }
     
     // TODO(student): Add viewport movement and scaling logic
+    const int moveStep = 10;
+    if (key == GLFW_KEY_I) miniViewportArea.y += moveStep;
+    if (key == GLFW_KEY_K) miniViewportArea.y -= moveStep;
+    if (key == GLFW_KEY_J) miniViewportArea.x -= moveStep;
+    if (key == GLFW_KEY_L) miniViewportArea.x += moveStep;
+
+    if (key == GLFW_KEY_U || key == GLFW_KEY_O)
+    {
+        float factor = (key == GLFW_KEY_O) ? 1.1f : 1 / 1.1f;
+        int newWidth = glm::max(1, (int)(miniViewportArea.width * factor));
+        int newHeight = glm::max(1, (int)(miniViewportArea.height * factor));
+        // Truncation would swallow the whole 10% step below 10 px, so always grow by at least 1 px
+        if (key == GLFW_KEY_O)
+        {
+            newWidth = glm::max(newWidth, miniViewportArea.width + 1);
+            newHeight = glm::max(newHeight, miniViewportArea.height + 1);
+        }
+        miniViewportArea.x -= (newWidth - miniViewportArea.width) / 2;
+        miniViewportArea.y -= (newHeight - miniViewportArea.height) / 2;
+        miniViewportArea.width = newWidth;
+        miniViewportArea.height = newHeight;
+    }
 }
 
 

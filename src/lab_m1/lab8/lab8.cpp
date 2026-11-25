@@ -60,6 +60,8 @@ void Lab8::Init()
         materialShininess = 30;
         materialKd = 0.5;
         materialKs = 0.5;
+        isSpot = false;
+        cutOff = RADIANS(30.0f);
     }
 }
 
@@ -81,8 +83,7 @@ void Lab8::Update(float deltaTimeSeconds)
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 0));
-        // TODO(student): Add or change the object colors
-        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix);
+        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, glm::vec3(1, 0.5f, 0.2f));
 
     }
 
@@ -91,8 +92,7 @@ void Lab8::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, glm::vec3(2, 0.5f, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 0, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
-        // TODO(student): Add or change the object colors
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix);
+        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, glm::vec3(0.3f, 0.8f, 0.3f));
 
     }
 
@@ -108,8 +108,7 @@ void Lab8::Update(float deltaTimeSeconds)
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0.01f, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f));
-        // TODO(student): Add or change the object colors
-        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix);
+        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix, glm::vec3(0.6f));
 
     }
 
@@ -162,7 +161,11 @@ void Lab8::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     int object_color = glGetUniformLocation(shader->program, "object_color");
     glUniform3f(object_color, color.r, color.g, color.b);
 
-    // TODO(student): Set any other shader uniforms that you need
+    int is_spot = glGetUniformLocation(shader->program, "is_spot");
+    glUniform1i(is_spot, isSpot);
+
+    int cut_off = glGetUniformLocation(shader->program, "cut_off");
+    glUniform1f(cut_off, cutOff);
 
     // Bind model matrix
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
@@ -209,7 +212,17 @@ void Lab8::OnInputUpdate(float deltaTime, int mods)
         if (window->KeyHold(GLFW_KEY_E)) lightPosition += up * deltaTime * speed;
         if (window->KeyHold(GLFW_KEY_Q)) lightPosition -= up * deltaTime * speed;
 
-        // TODO(student): Set any other keys that you might need
+        // The spotlight is aimed with I, J, K, L and its cone is widened with O, narrowed with U
+        glm::mat4 rotation = glm::mat4(1);
+        if (window->KeyHold(GLFW_KEY_I)) rotation = glm::rotate(rotation, -deltaTime * speed, glm::vec3(1, 0, 0));
+        if (window->KeyHold(GLFW_KEY_K)) rotation = glm::rotate(rotation, deltaTime * speed, glm::vec3(1, 0, 0));
+        if (window->KeyHold(GLFW_KEY_J)) rotation = glm::rotate(rotation, deltaTime * speed, glm::vec3(0, 0, 1));
+        if (window->KeyHold(GLFW_KEY_L)) rotation = glm::rotate(rotation, -deltaTime * speed, glm::vec3(0, 0, 1));
+        lightDirection = glm::normalize(glm::vec3(rotation * glm::vec4(lightDirection, 0)));
+
+        if (window->KeyHold(GLFW_KEY_O)) cutOff += deltaTime;
+        if (window->KeyHold(GLFW_KEY_U)) cutOff -= deltaTime;
+        cutOff = glm::clamp(cutOff, RADIANS(1.0f), RADIANS(90.0f));
 
     }
 }
@@ -218,9 +231,10 @@ void Lab8::OnInputUpdate(float deltaTime, int mods)
 void Lab8::OnKeyPress(int key, int mods)
 {
     // Add key press event
-
-    // TODO(student): Set keys that you might need
-
+    if (key == GLFW_KEY_F)
+    {
+        isSpot = !isSpot;
+    }
 }
 
 

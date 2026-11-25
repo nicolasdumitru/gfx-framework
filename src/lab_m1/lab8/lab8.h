@@ -36,7 +36,8 @@ namespace m1
         float materialKd;
         float materialKs;
 
-        // TODO(student): If you need any other class variables, define them here.
+        bool isSpot;
+        float cutOff;
 
     };
 }   // namespace m1
